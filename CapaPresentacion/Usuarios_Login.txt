@@ -1,0 +1,7 @@
+Usuarios Credenciales para loguearse
+Administrador
+documento: 191919
+contraseña: 123
+Empleado
+documento: 20
+contraseña: 456
