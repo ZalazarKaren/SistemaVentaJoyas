@@ -67,7 +67,7 @@ namespace CapaPresentacion
             }
             cbobusqueda.DisplayMember = "Texto";
             cbobusqueda .ValueMember = "Valor";
-            cborol.SelectedIndex = 0;
+            cbobusqueda.SelectedIndex = 0;
 
 
             //Mostrar todos los Usuarios

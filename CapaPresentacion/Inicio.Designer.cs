@@ -30,7 +30,7 @@
         {
             this.menu = new System.Windows.Forms.MenuStrip();
             this.menuUsuarios = new FontAwesome.Sharp.IconMenuItem();
-            this.menuMantenedor = new FontAwesome.Sharp.IconMenuItem();
+            this.menuConfiguracion = new FontAwesome.Sharp.IconMenuItem();
             this.submenucategoria = new FontAwesome.Sharp.IconMenuItem();
             this.submenuproducto = new FontAwesome.Sharp.IconMenuItem();
             this.menuVentas = new FontAwesome.Sharp.IconMenuItem();
@@ -56,7 +56,7 @@
             this.menu.BackColor = System.Drawing.Color.White;
             this.menu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuUsuarios,
-            this.menuMantenedor,
+            this.menuConfiguracion,
             this.menuVentas,
             this.menuCompras,
             this.menuClientes,
@@ -83,21 +83,21 @@
             this.menuUsuarios.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
             this.menuUsuarios.Click += new System.EventHandler(this.menuUsuario_Click);
             // 
-            // menuMantenedor
+            // menuConfiguracion
             // 
-            this.menuMantenedor.AutoSize = false;
-            this.menuMantenedor.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menuConfiguracion.AutoSize = false;
+            this.menuConfiguracion.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.submenucategoria,
             this.submenuproducto});
-            this.menuMantenedor.IconChar = FontAwesome.Sharp.IconChar.ScrewdriverWrench;
-            this.menuMantenedor.IconColor = System.Drawing.Color.Black;
-            this.menuMantenedor.IconFont = FontAwesome.Sharp.IconFont.Auto;
-            this.menuMantenedor.IconSize = 50;
-            this.menuMantenedor.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-            this.menuMantenedor.Name = "menuMantenedor";
-            this.menuMantenedor.Size = new System.Drawing.Size(122, 69);
-            this.menuMantenedor.Text = "Mantenedor";
-            this.menuMantenedor.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this.menuConfiguracion.IconChar = FontAwesome.Sharp.IconChar.ScrewdriverWrench;
+            this.menuConfiguracion.IconColor = System.Drawing.Color.Black;
+            this.menuConfiguracion.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            this.menuConfiguracion.IconSize = 50;
+            this.menuConfiguracion.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.menuConfiguracion.Name = "menuConfiguracion";
+            this.menuConfiguracion.Size = new System.Drawing.Size(122, 69);
+            this.menuConfiguracion.Text = "Configuración";
+            this.menuConfiguracion.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
             // 
             // submenucategoria
             // 
@@ -105,7 +105,7 @@
             this.submenucategoria.IconColor = System.Drawing.Color.Black;
             this.submenucategoria.IconFont = FontAwesome.Sharp.IconFont.Auto;
             this.submenucategoria.Name = "submenucategoria";
-            this.submenucategoria.Size = new System.Drawing.Size(125, 22);
+            this.submenucategoria.Size = new System.Drawing.Size(180, 22);
             this.submenucategoria.Text = "Categoria";
             this.submenucategoria.Click += new System.EventHandler(this.submenucategoria_Click);
             // 
@@ -115,7 +115,7 @@
             this.submenuproducto.IconColor = System.Drawing.Color.Black;
             this.submenuproducto.IconFont = FontAwesome.Sharp.IconFont.Auto;
             this.submenuproducto.Name = "submenuproducto";
-            this.submenuproducto.Size = new System.Drawing.Size(125, 22);
+            this.submenuproducto.Size = new System.Drawing.Size(180, 22);
             this.submenuproducto.Text = "Producto";
             this.submenuproducto.Click += new System.EventHandler(this.submenuproducto_Click);
             // 
@@ -329,7 +329,7 @@
         private System.Windows.Forms.MenuStrip menuTitulo;
         private System.Windows.Forms.Label label1;
         private FontAwesome.Sharp.IconMenuItem menuUsuarios;
-        private FontAwesome.Sharp.IconMenuItem menuMantenedor;
+        private FontAwesome.Sharp.IconMenuItem menuConfiguracion;
         private FontAwesome.Sharp.IconMenuItem menuVentas;
         private FontAwesome.Sharp.IconMenuItem menuCompras;
         private FontAwesome.Sharp.IconMenuItem menuClientes;
