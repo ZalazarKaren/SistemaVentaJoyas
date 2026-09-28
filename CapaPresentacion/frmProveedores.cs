@@ -226,6 +226,22 @@ namespace CapaPresentacion
             }
         }
 
+       
+
+        private void btnlimpiarbuscador_Click(object sender, EventArgs e)
+        {
+            txtbusqueda.Text = "";
+            foreach (DataGridViewRow row in dgvdata.Rows)
+            {
+                row.Visible = true;
+            }
+        }
+
+        private void btnlimpiar_Click(object sender, EventArgs e)
+        {
+            Limpiar();
+        }
+
         private void btnbuscar_Click(object sender, EventArgs e)
         {
             string columnaFiltro = ((OpcionCombo)cbobusqueda.SelectedItem).Valor.ToString();
@@ -240,20 +256,6 @@ namespace CapaPresentacion
                         row.Visible = false;
                 }
             }
-        }
-
-        private void btnlimpiarbuscador_Click(object sender, EventArgs e)
-        {
-            txtbusqueda.Text = "";
-            foreach (DataGridViewRow row in dgvdata.Rows)
-            {
-                row.Visible = true;
-            }
-        }
-
-        private void btnlimpiar_Click(object sender, EventArgs e)
-        {
-            Limpiar();
         }
     }
 }
