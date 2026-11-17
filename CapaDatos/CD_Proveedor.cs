@@ -11,7 +11,6 @@ namespace CapaDatos
 {
     public class CD_Proveedor
     {
-
         public List<Proveedor> Listar()
         {
             List<Proveedor> lista = new List<Proveedor>();
@@ -21,7 +20,11 @@ namespace CapaDatos
                 try
                 {
                     StringBuilder query = new StringBuilder();
-                    query.AppendLine("select IdProveedor,Documento,RazonSocial,Correo,Telefono,Estado from PROVEEDOR");
+                    // Modificado para hacer INNER JOIN con PERSONA y aplicar filtro de borrado lógico
+                    query.AppendLine("SELECT pr.IdProveedor, p.Documento, pr.RazonSocial, p.Correo, p.Telefono, p.Estado ");
+                    query.AppendLine("FROM PROVEEDOR pr ");
+                    query.AppendLine("INNER JOIN PERSONA p ON pr.IdPersona = p.IdPersona ");
+                    query.AppendLine("WHERE p.Estado = 1");
 
                     SqlCommand cmd = new SqlCommand(query.ToString(), oconexion);
                     cmd.CommandType = CommandType.Text;
@@ -50,7 +53,6 @@ namespace CapaDatos
                 }
             }
             return lista;
-
         }
 
         public int Registrar(Proveedor obj, out string Mensaje)
@@ -82,7 +84,6 @@ namespace CapaDatos
             }
             catch (Exception ex)
             {
-
                 idProveedorgenerado = 0;
                 Mensaje = ex.Message;
             }
@@ -94,7 +95,6 @@ namespace CapaDatos
         {
             bool respuesta = false;
             Mensaje = string.Empty;
-
 
             try
             {
@@ -121,7 +121,6 @@ namespace CapaDatos
             }
             catch (Exception ex)
             {
-
                 respuesta = false;
                 Mensaje = ex.Message;
             }
@@ -129,12 +128,10 @@ namespace CapaDatos
             return respuesta;
         }
 
-
         public bool Eliminar(Proveedor obj, out string Mensaje)
         {
             bool respuesta = false;
             Mensaje = string.Empty;
-
 
             try
             {
@@ -156,12 +153,108 @@ namespace CapaDatos
             }
             catch (Exception ex)
             {
-
                 respuesta = false;
                 Mensaje = ex.Message;
             }
 
             return respuesta;
+        }
+
+        // ====================================================================
+        // NUEVOS MÉTODOS PARA LA TABLA INTERMEDIA (PUNTO 1: PROVEEDOR-CATEGORIA)
+        // ====================================================================
+
+        public bool AsignarCategoria(int IdProveedor, int IdCategoria, out string Mensaje)
+        {
+            bool respuesta = false;
+            Mensaje = string.Empty;
+            try
+            {
+                using (SqlConnection oconexion = new SqlConnection(Conexion.cadena))
+                {
+                    SqlCommand cmd = new SqlCommand("sp_AsignarCategoriaProveedor", oconexion);
+                    cmd.Parameters.AddWithValue("IdProveedor", IdProveedor);
+                    cmd.Parameters.AddWithValue("IdCategoria", IdCategoria);
+                    cmd.Parameters.Add("Resultado", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 500).Direction = ParameterDirection.Output;
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    oconexion.Open();
+                    cmd.ExecuteNonQuery();
+
+                    respuesta = Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
+                    Mensaje = cmd.Parameters["Mensaje"].Value.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                respuesta = false;
+                Mensaje = ex.Message;
+            }
+            return respuesta;
+        }
+
+        public bool QuitarCategoria(int IdProveedor, int IdCategoria, out string Mensaje)
+        {
+            bool respuesta = false;
+            Mensaje = string.Empty;
+            try
+            {
+                using (SqlConnection oconexion = new SqlConnection(Conexion.cadena))
+                {
+                    SqlCommand cmd = new SqlCommand("sp_QuitarCategoriaProveedor", oconexion);
+                    cmd.Parameters.AddWithValue("IdProveedor", IdProveedor);
+                    cmd.Parameters.AddWithValue("IdCategoria", IdCategoria);
+                    cmd.Parameters.Add("Resultado", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    oconexion.Open();
+                    cmd.ExecuteNonQuery();
+
+                    respuesta = Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
+                    if (respuesta) Mensaje = "Categoría removida correctamente.";
+                    else Mensaje = "Error al intentar remover la categoría.";
+                }
+            }
+            catch (Exception ex)
+            {
+                respuesta = false;
+                Mensaje = ex.Message;
+            }
+            return respuesta;
+        }
+
+        public List<Categoria> ListarCategorias(int IdProveedor)
+        {
+            List<Categoria> lista = new List<Categoria>();
+            using (SqlConnection oconexion = new SqlConnection(Conexion.cadena))
+            {
+                try
+                {
+                    SqlCommand cmd = new SqlCommand("sp_ListarCategoriasPorProveedor", oconexion);
+                    cmd.Parameters.AddWithValue("IdProveedor", IdProveedor);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    oconexion.Open();
+
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            lista.Add(new Categoria()
+                            {
+                                IdCategoria = Convert.ToInt32(dr["IdCategoria"]),
+                                Descripcion = dr["Descripcion"].ToString()
+                            });
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    lista = new List<Categoria>();
+                }
+            }
+            return lista;
         }
     }
 }

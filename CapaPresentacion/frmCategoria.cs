@@ -16,12 +16,11 @@ namespace CapaPresentacion
 {
     public partial class frmCategoria : Form
     {
-
         private Image imagenCheck;
         private Image imagenDelete;
+
         public frmCategoria()
         {
-
             InitializeComponent();
 
             string carpetaImagenes = Path.Combine(
@@ -35,7 +34,7 @@ namespace CapaPresentacion
             );
 
             imagenDelete = Image.FromFile(
-                Path.Combine(carpetaImagenes, "delete32.png")
+                Path.Combine(carpetaImagenes, "delete20.png")
             );
         }
 
@@ -58,24 +57,30 @@ namespace CapaPresentacion
             cbobusqueda.ValueMember = "Valor";
             cbobusqueda.SelectedIndex = 0;
 
-
-            //Mostrar todos los Usuarios
+            // Mostrar todas las Categorías
             List<Categoria> lista = new CN_Categoria().Listar();
 
             foreach (Categoria item in lista)
             {
-
-                dgvdata.Rows.Add(new object[] {"", item.IdCategoria, 
+                dgvdata.Rows.Add(new object[] {"", item.IdCategoria,
                     item.Descripcion,
                     item.Estado == true ? 1 : 0,
                     item.Estado == true ? "Activo" : "No Activo"
-            });
+                });
             }
-
         }
 
         private void btnguardar_Click(object sender, EventArgs e)
         {
+            // --- VALIDACIÓN VISUAL: Evitar campos vacíos antes de procesar ---
+            if (string.IsNullOrWhiteSpace(txtdescripcion.Text))
+            {
+                MessageBox.Show("Debe ingresar una descripción para la categoría.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtdescripcion.Focus();
+                return; // Corta la ejecución si la validación falla
+            }
+            // --- FIN VALIDACIÓN ---
+
             string mensaje = string.Empty;
 
             Categoria obj = new Categoria()
@@ -87,14 +92,13 @@ namespace CapaPresentacion
 
             if (obj.IdCategoria == 0)
             {
-
                 int idgenerado = new CN_Categoria().Registrar(obj, out mensaje);
 
                 if (idgenerado != 0)
                 {
-                    dgvdata.Rows.Add(new object[] {"",idgenerado, txtdescripcion.Text, 
+                    dgvdata.Rows.Add(new object[] {"",idgenerado, txtdescripcion.Text,
                         ((OpcionCombo)cboestado.SelectedItem).Valor.ToString(),
-                        ((OpcionCombo)cboestado.SelectedItem).Texto.ToString()  
+                        ((OpcionCombo)cboestado.SelectedItem).Texto.ToString()
                     });
                     Limpiar();
                 }
@@ -120,17 +124,15 @@ namespace CapaPresentacion
                 {
                     MessageBox.Show(mensaje);
                 }
-
             }
         }
+
         private void Limpiar()
         {
             txtindice.Text = "-1";
             txtid.Text = "";
             txtdescripcion.Text = "";
-          
             cboestado.SelectedIndex = 0;
-
             txtdescripcion.Select();
         }
 
@@ -143,11 +145,9 @@ namespace CapaPresentacion
             {
                 e.Paint(e.CellBounds, DataGridViewPaintParts.All);
 
-                // Tamaño de la imagen dentro de la celda
                 int ancho = 20;
                 int alto = 20;
 
-                // Centrar la imagen
                 int x = e.CellBounds.Left + (e.CellBounds.Width - ancho) / 2;
                 int y = e.CellBounds.Top + (e.CellBounds.Height - alto) / 2;
 
@@ -172,7 +172,6 @@ namespace CapaPresentacion
                 txtindice.Text = indice.ToString();
                 txtid.Text = dgvdata.Rows[indice].Cells["Id"].Value.ToString();
                 txtdescripcion.Text = dgvdata.Rows[indice].Cells["Descripcion"].Value.ToString();
-               
 
                 // Seleccionar ESTADO
                 foreach (OpcionCombo oc in cboestado.Items)
@@ -209,7 +208,6 @@ namespace CapaPresentacion
                         MessageBox.Show(mensaje, "Mensaje", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     }
                 }
-
             }
         }
 
@@ -240,8 +238,7 @@ namespace CapaPresentacion
 
         private void btnlimpiar_Click(object sender, EventArgs e)
         {
-           Limpiar();
+            Limpiar();
         }
-    
     }
 }

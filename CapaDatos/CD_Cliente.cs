@@ -20,8 +20,12 @@ namespace CapaDatos
                 try
                 {
                     StringBuilder query = new StringBuilder();
-                    query.AppendLine("select IdCliente,Documento,NombreCompleto,Correo,Telefono,Estado from CLIENTE");
-                    
+                    // Consulta actualizada con INNER JOIN y separación de Nombre/Apellido
+                    query.AppendLine("SELECT c.IdCliente, p.Documento, p.Nombre, p.Apellido, p.Correo, p.Telefono, p.Estado ");
+                    query.AppendLine("FROM CLIENTE c ");
+                    query.AppendLine("INNER JOIN PERSONA p ON c.IdPersona = p.IdPersona ");
+                    query.AppendLine("WHERE p.Estado = 1"); // Baja lógica
+
                     SqlCommand cmd = new SqlCommand(query.ToString(), oconexion);
                     cmd.CommandType = CommandType.Text;
                     oconexion.Open();
@@ -34,11 +38,11 @@ namespace CapaDatos
                             {
                                 IdCliente = Convert.ToInt32(dr["IdCliente"]),
                                 Documento = dr["Documento"].ToString(),
-                                NombreCompleto = dr["NombreCompleto"].ToString(),
+                                Nombre = dr["Nombre"].ToString(),     // Reemplazo de NombreCompleto
+                                Apellido = dr["Apellido"].ToString(), // Nuevo campo
                                 Correo = dr["Correo"].ToString(),
                                 Telefono = dr["Telefono"].ToString(),
-                                Estado = Convert.ToBoolean(dr["Estado"]),
-                              
+                                Estado = Convert.ToBoolean(dr["Estado"])
                             });
                         }
                     }
@@ -49,7 +53,6 @@ namespace CapaDatos
                 }
             }
             return lista;
-
         }
 
         public int Registrar(Cliente obj, out string Mensaje)
@@ -63,7 +66,8 @@ namespace CapaDatos
                 {
                     SqlCommand cmd = new SqlCommand("sp_RegistrarCliente", oconexion);
                     cmd.Parameters.AddWithValue("Documento", obj.Documento);
-                    cmd.Parameters.AddWithValue("NombreCompleto", obj.NombreCompleto);
+                    cmd.Parameters.AddWithValue("Nombre", obj.Nombre);       // Modificado
+                    cmd.Parameters.AddWithValue("Apellido", obj.Apellido);   // Modificado
                     cmd.Parameters.AddWithValue("Correo", obj.Correo);
                     cmd.Parameters.AddWithValue("Telefono", obj.Telefono);
                     cmd.Parameters.AddWithValue("Estado", obj.Estado);
@@ -81,7 +85,6 @@ namespace CapaDatos
             }
             catch (Exception ex)
             {
-
                 idClientegenerado = 0;
                 Mensaje = ex.Message;
             }
@@ -94,7 +97,6 @@ namespace CapaDatos
             bool respuesta = false;
             Mensaje = string.Empty;
 
-
             try
             {
                 using (SqlConnection oconexion = new SqlConnection(Conexion.cadena))
@@ -102,7 +104,8 @@ namespace CapaDatos
                     SqlCommand cmd = new SqlCommand("sp_ModificarCliente", oconexion);
                     cmd.Parameters.AddWithValue("IdCliente", obj.IdCliente);
                     cmd.Parameters.AddWithValue("Documento", obj.Documento);
-                    cmd.Parameters.AddWithValue("NombreCompleto", obj.NombreCompleto);
+                    cmd.Parameters.AddWithValue("Nombre", obj.Nombre);       // Modificado
+                    cmd.Parameters.AddWithValue("Apellido", obj.Apellido);   // Modificado
                     cmd.Parameters.AddWithValue("Correo", obj.Correo);
                     cmd.Parameters.AddWithValue("Telefono", obj.Telefono);
                     cmd.Parameters.AddWithValue("Estado", obj.Estado);
@@ -120,43 +123,39 @@ namespace CapaDatos
             }
             catch (Exception ex)
             {
-
                 respuesta = false;
                 Mensaje = ex.Message;
             }
 
             return respuesta;
         }
-
 
         public bool Eliminar(Cliente obj, out string Mensaje)
         {
             bool respuesta = false;
             Mensaje = string.Empty;
 
-
             try
             {
                 using (SqlConnection oconexion = new SqlConnection(Conexion.cadena))
                 {
-                    SqlCommand cmd = new SqlCommand("delete from CLIENTE where IdCliente = @id", oconexion);
+                    // Modificado para hacer Update lógico en lugar de Delete físico
+                    string query = "UPDATE PERSONA SET Estado = 0 WHERE IdPersona = (SELECT IdPersona FROM CLIENTE WHERE IdCliente = @id)";
+                    SqlCommand cmd = new SqlCommand(query, oconexion);
                     cmd.Parameters.AddWithValue("@id", obj.IdCliente);
                     cmd.CommandType = CommandType.Text;
 
                     oconexion.Open();
                     respuesta = cmd.ExecuteNonQuery() > 0 ? true : false;
-
                 }
             }
             catch (Exception ex)
             {
-
                 respuesta = false;
                 Mensaje = ex.Message;
             }
 
             return respuesta;
         }
-
     }
 }

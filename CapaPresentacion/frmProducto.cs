@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ClosedXML.Excel;
 
 namespace CapaPresentacion
 {
@@ -18,6 +19,7 @@ namespace CapaPresentacion
     {
         private Image imagenCheck;
         private Image imagenDelete;
+
         public frmProducto()
         {
             InitializeComponent();
@@ -33,12 +35,15 @@ namespace CapaPresentacion
             );
 
             imagenDelete = Image.FromFile(
-                Path.Combine(carpetaImagenes, "delete32.png")
+                Path.Combine(carpetaImagenes, "delete20.png")
             );
         }
 
         private void frmProducto_Load(object sender, EventArgs e)
         {
+            // Vinculamos la validación numérica al campo código al cargar el formulario
+            txtcodigo.KeyPress += new KeyPressEventHandler(ValidarNumeros_KeyPress);
+
             cboestado.Items.Add(new OpcionCombo() { Valor = 1, Texto = "Activo" });
             cboestado.Items.Add(new OpcionCombo() { Valor = 0, Texto = " No Activo" });
             cboestado.DisplayMember = "Texto";
@@ -66,20 +71,18 @@ namespace CapaPresentacion
             cbobusqueda.ValueMember = "Valor";
             cbobusqueda.SelectedIndex = 0;
 
-
-            //Mostrar todos los Usuarios
+            // Mostrar todos los Productos
             List<Producto> lista = new CN_Producto().Listar();
 
             foreach (Producto item in lista)
             {
-
-                dgvdata.Rows.Add(new object[] 
+                dgvdata.Rows.Add(new object[]
                 {
-                    "", 
-                    item.IdProducto, 
-                    item.Codigo, 
-                    item.Nombre, 
-                    item.Descripcion, 
+                    "",
+                    item.IdProducto,
+                    item.Codigo,
+                    item.Nombre,
+                    item.Descripcion,
                     item.oCategoria.IdCategoria,
                     item.oCategoria.Descripcion,
                     item.Stock,
@@ -87,15 +90,34 @@ namespace CapaPresentacion
                     item.PrecioVenta.ToString("0.00"),
                     item.Estado == true ? 1 : 0,
                     item.Estado == true ? "Activo" : "No Activo"
-            });
+                });
+            }
+        }
+
+        // --- VALIDACIÓN VISUAL: Bloquear letras en campos numéricos ---
+        private void ValidarNumeros_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
             }
         }
 
         private void btnguardar_Click(object sender, EventArgs e)
         {
+            // --- VALIDACIONES VISUALES ANTES DE ENVIAR A LA CAPA DE NEGOCIO ---
+            if (string.IsNullOrWhiteSpace(txtcodigo.Text) ||
+                string.IsNullOrWhiteSpace(txtnombre.Text))
+            {
+                MessageBox.Show("Debe completar los campos obligatorios (Código y Nombre).", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtcodigo.Focus();
+                return; // Corta la ejecución si falta información esencial
+            }
+            // --- FIN VALIDACIONES ---
+
             string mensaje = string.Empty;
 
-            Producto obj = new Producto ()
+            Producto obj = new Producto()
             {
                 IdProducto = Convert.ToInt32(txtid.Text == "" ? "0" : txtid.Text),
                 Codigo = txtcodigo.Text,
@@ -103,21 +125,19 @@ namespace CapaPresentacion
                 Descripcion = txtdescripcion.Text,
                 oCategoria = new Categoria() { IdCategoria = Convert.ToInt32(((OpcionCombo)cbocategoria.SelectedItem).Valor) },
                 Estado = Convert.ToInt32(((OpcionCombo)cboestado.SelectedItem).Valor) == 1 ? true : false
-
             };
 
             if (obj.IdProducto == 0)
             {
-
                 int idgenerado = new CN_Producto().Registrar(obj, out mensaje);
 
                 if (idgenerado != 0)
                 {
                     dgvdata.Rows.Add(new object[] {
                         "",
-                        idgenerado, 
-                        txtcodigo.Text, 
-                        txtnombre.Text, 
+                        idgenerado,
+                        txtcodigo.Text,
+                        txtnombre.Text,
                         txtdescripcion.Text,
                         ((OpcionCombo)cbocategoria.SelectedItem).Valor.ToString(),
                         ((OpcionCombo)cbocategoria.SelectedItem).Texto.ToString(),
@@ -156,7 +176,6 @@ namespace CapaPresentacion
                 {
                     MessageBox.Show(mensaje);
                 }
-
             }
         }
 
@@ -187,11 +206,9 @@ namespace CapaPresentacion
             {
                 e.Paint(e.CellBounds, DataGridViewPaintParts.All);
 
-                // Tamaño de la imagen dentro de la celda
                 int ancho = 20;
                 int alto = 20;
 
-                // Centrar la imagen
                 int x = e.CellBounds.Left + (e.CellBounds.Width - ancho) / 2;
                 int y = e.CellBounds.Top + (e.CellBounds.Height - alto) / 2;
 
@@ -242,14 +259,11 @@ namespace CapaPresentacion
                         break;
                     }
                 }
-
-               
             }
         }
 
         private void btneliminar_Click(object sender, EventArgs e)
         {
-
             if (Convert.ToInt32(txtid.Text) != 0)
             {
                 if (MessageBox.Show("¿Desea eliminar el producto seleccionado?", "Mensaje", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
@@ -270,7 +284,6 @@ namespace CapaPresentacion
                         MessageBox.Show(mensaje, "Mensaje", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     }
                 }
-
             }
         }
 
@@ -298,5 +311,82 @@ namespace CapaPresentacion
                 row.Visible = true;
             }
         }
+
+        private void btnexportar_Click(object sender, EventArgs e)
+        {
+            // 1. Validamos si la grilla tiene al menos una fila con datos
+            if (dgvdata.Rows.Count < 1)
+            {
+                MessageBox.Show("No hay datos para exportar", "Mensaje", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
+            else
+            {
+                // 2. Creamos una tabla en memoria (DataTable) para estructurar los datos a exportar
+                DataTable dt = new DataTable();
+
+                // 3. Recorremos las columnas de la grilla para crear los encabezados en el DataTable
+                foreach (DataGridViewColumn columna in dgvdata.Columns)
+                {
+                    // Solo tomamos en cuenta las columnas que tienen título y que están visibles en pantalla
+                    if (columna.HeaderText != "" && columna.Visible)
+                    {
+                        dt.Columns.Add(columna.HeaderText, typeof(string));
+                    }
+                }
+
+                // 4. Recorremos todas las filas de la grilla
+                foreach (DataGridViewRow row in dgvdata.Rows)
+                {
+                    // Filtramos solo las filas que el usuario está viendo (útil si hay filtros de búsqueda aplicados)
+                    if (row.Visible)
+                    {
+                        // 5. Agregamos una nueva fila al DataTable volcando el contenido exacto de cada celda visible
+                        dt.Rows.Add(new object[] {
+                    row.Cells[2].Value.ToString(),
+                    row.Cells[3].Value.ToString(),
+                    row.Cells[4].Value.ToString(),
+                    row.Cells[6].Value.ToString(),
+                    row.Cells[7].Value.ToString(),
+                    row.Cells[8].Value.ToString(),
+                    row.Cells[9].Value.ToString(),
+                    row.Cells[11].Value.ToString()
+                });
+                    }
+                }
+
+                // 6. Configuramos la clásica ventana de Windows de "Guardar como..."
+                SaveFileDialog savefile = new SaveFileDialog();
+                // Genera un nombre de archivo automático con la fecha y hora para evitar sobreescribir reportes anteriores
+                savefile.FileName = string.Format("ReporteProducto_{0}.xlsx", DateTime.Now.ToString("ddMMyyyyHHmmss"));
+                // Filtramos para que solo permita guardar con formato Excel (.xlsx)
+                savefile.Filter = "Excel Files | *.xlsx";
+
+                // 7. Abrimos la ventana. Si el usuario elige una ruta y le da a "Guardar" (DialogResult.OK), entramos al if
+                if (savefile.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        // 8. Creamos el archivo Excel en blanco usando la librería ClosedXML
+                        XLWorkbook wb = new XLWorkbook();
+                        // Le agregamos una hoja llamada "Informe" y le pasamos de golpe todo nuestro DataTable (dt)
+                        var hoja = wb.Worksheets.Add(dt, "Informe");
+                        // Ajustamos el ancho de las columnas automáticamente para que el texto no quede escondido
+                        hoja.ColumnsUsed().AdjustToContents();
+
+                        // Guardamos el archivo físico en la ruta elegida por el usuario
+                        wb.SaveAs(savefile.FileName);
+
+                        // Avisamos que salió todo bien
+                        MessageBox.Show("Reporte Generado", "Mensaje", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch
+                    {
+                        // Si ocurre un error (por ejemplo, el usuario tiene un archivo con el mismo nombre abierto en Excel), mostramos error
+                        MessageBox.Show("Error al generar reporte", "Mensaje", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    }
+                }
+            }
+        }
     }
 }
+
