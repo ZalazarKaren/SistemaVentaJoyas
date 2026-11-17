@@ -2,20 +2,21 @@
 
 **Grupo 37:** Salvia Luciana – Zalazar Karen
 
-Sistema de ventas desarrollado para facilitar la gestión de **productos, categorías, clientes, proveedores, compras, ventas, usuarios y stock**. Permite registrar y consultar operaciones, manteniendo actualizado el stock de los productos.
+Aplicación de escritorio desarrollada en C# (.NET Framework / Windows Forms) y SQL Server con arquitectura en capas, orientada a la administración integral de una joyería. Permite gestionar el catálogo de artículos, controlar el inventario en tiempo real, registrar operaciones comerciales y emitir comprobantes y reportes.
 
-### Funcionalidades principales
+## Funcionalidades principales
 
-* Gestión de productos y categorías.
-* Gestión de clientes y proveedores.
-* Registro de compras y ventas.
-* Control automático de stock.
-* Consulta de compras y ventas.
-* Gestión de usuarios y acceso mediante login.
+* **Gestión de catálogo:** Administración (ABM) de productos y categorías.
+* **Gestión de contactos:** Administración de clientes y proveedores con validaciones de datos.
+* **Operaciones comerciales:** Registro de compras y ventas con reserva y actualización automática de stock.
+* **Comprobantes y consultas:** Visualización de detalles de ventas y compras, con exportación a PDF.
+* **Reportes e históricos:** Generación de reportes por período y consulta de auditoría de movimientos.
+* **Seguridad y mantenimiento:** Control de acceso mediante inicio de sesión basado en roles, gestión de usuarios, configuración de datos del negocio y respaldo/restauración de la base de datos.
 
-### Credenciales de acceso
+## Credenciales de acceso
 
-| Usuario       | Documento | Contraseña |
-| ------------- | --------: | ---------: |
-| Administrador |  `191919` |      `123` |
-| Empleado      |      `20` |      `456` |
+| Rol | Documento | Contraseña |
+| :--- | :---: | :---: |
+| Administrador | `191919` | `191919` |
+| Supervisor | `404040` | `Hola1234` |
+| Vendedor | `242424` | `Hola1234` |
